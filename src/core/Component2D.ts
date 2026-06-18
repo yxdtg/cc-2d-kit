@@ -1,5 +1,6 @@
 import {
     Collider2D,
+    Color,
     Component,
     Contact2DType,
     EventKeyboard,
@@ -11,6 +12,7 @@ import {
     Node,
     NodeEventType,
     PhysicsSystem2D,
+    UIRenderer,
     UITransform,
     Vec3,
     type IPhysics2DContact,
@@ -168,6 +170,20 @@ export class Component2D extends Component {
         this.__tryGetUITransform();
         this.__registerEvents();
     }
+    private __onComponentAdded(component: Component): void {
+        if (this._renderableComponent === null) {
+            if (component instanceof UIRenderer) {
+                this._renderableComponent = component;
+
+                this._applyColor();
+            }
+        }
+    }
+    private __onComponentRemoved(component: Component): void {
+        if (this._renderableComponent === component) {
+            this._renderableComponent = null;
+        }
+    }
 
     protected onDestroy(): void {
         if (getEventTypeEnabled(this, EVENT_TYPE_MAP.Keyboard)) {
@@ -294,6 +310,67 @@ export class Component2D extends Component {
         this.angle = math.toDegree(value);
     }
 
+    private _color = Color.WHITE.clone();
+    public get color(): Readonly<Color> {
+        return this._color;
+    }
+    public set color(value: Color) {
+        this._color.set(value);
+        this._applyColor();
+    }
+
+    public setColor(r: number = 255, g: number = 255, b: number = 255, a: number = 255): void {
+        this._color.set(r, g, b, a);
+        this._applyColor();
+    }
+
+    public get colorR() {
+        return this._color.r;
+    }
+    public set colorR(value: number) {
+        this._color.r = value;
+        this._applyColor();
+    }
+
+    public get colorG() {
+        return this._color.g;
+    }
+    public set colorG(value: number) {
+        this._color.g = value;
+        this._applyColor();
+    }
+
+    public get colorB() {
+        return this._color.b;
+    }
+    public set colorB(value: number) {
+        this._color.b = value;
+        this._applyColor();
+    }
+
+    public get colorA() {
+        return this._color.a;
+    }
+    public set colorA(value: number) {
+        this._color.a = value;
+        this._applyColor();
+    }
+
+    private _applyColor() {
+        if (this.renderableComponent) {
+            this.renderableComponent.color = this.color;
+        }
+    }
+
+    private _renderableComponent: UIRenderer | null = null;
+    public get renderableComponent() {
+        if (this._renderableComponent === null) {
+            this._renderableComponent = this.getComponent(UIRenderer);
+        }
+
+        return this._renderableComponent;
+    }
+
     /**
      * 将世界坐标转换为本地坐标 (convertToNodeSpaceAR)
      * @param worldPoint
@@ -309,11 +386,14 @@ export class Component2D extends Component {
      * @param out
      * @returns
      */
-    public toWorld(localPoint: math.Vec3, out?: math.Vec3) {
+    public toWorld(localPoint: Vec3, out?: Vec3) {
         return this._uiTransform.convertToWorldSpaceAR(localPoint, out);
     }
 
     private __registerEvents(): void {
+        this.node.on(NodeEventType.COMPONENT_ADDED, this.__onComponentAdded, this);
+        this.node.on(NodeEventType.COMPONENT_REMOVED, this.__onComponentRemoved, this);
+
         if (getEventTypeEnabled(this, EVENT_TYPE_MAP.Mouse)) {
             if (this.onMouseDown) {
                 this.node.on(NodeEventType.MOUSE_DOWN, this.onMouseDown, this);
@@ -351,6 +431,9 @@ export class Component2D extends Component {
         }
     }
     private __unregisterEvents(): void {
+        this.node.off(NodeEventType.COMPONENT_ADDED, this.__onComponentAdded, this);
+        this.node.off(NodeEventType.COMPONENT_REMOVED, this.__onComponentRemoved, this);
+
         if (getEventTypeEnabled(this, EVENT_TYPE_MAP.Mouse)) {
             if (this.onMouseDown) {
                 this.node.off(NodeEventType.MOUSE_DOWN, this.onMouseDown, this);
