@@ -91,7 +91,10 @@ export class Component2D extends Component {
         this._globalKeyboardEventComponent2Ds.push(component2D);
     }
     private static _removeFromGlobalKeyboardEventComponent2Ds(component2D: Component2D): void {
-        this._globalKeyboardEventComponent2Ds.splice(this._globalKeyboardEventComponent2Ds.indexOf(component2D), 1);
+        const index = this._globalKeyboardEventComponent2Ds.indexOf(component2D);
+        if (index !== -1) {
+            this._globalKeyboardEventComponent2Ds.splice(index, 1);
+        }
     }
 
     private static _onKeyDown(event: EventKeyboard): void {
@@ -122,7 +125,10 @@ export class Component2D extends Component {
         this._globalMouseComponent2Ds.push(component2D);
     }
     private static _removeFromGlobalMouseComponent2Ds(component2D: Component2D): void {
-        this._globalMouseComponent2Ds.splice(this._globalMouseComponent2Ds.indexOf(component2D), 1);
+        const index = this._globalMouseComponent2Ds.indexOf(component2D);
+        if (index !== -1) {
+            this._globalMouseComponent2Ds.splice(index, 1);
+        }
     }
 
     private static _onMouseDown(event: EventMouse): void {
@@ -165,7 +171,10 @@ export class Component2D extends Component {
         this._globalTouchEventComponent2Ds.push(component2D);
     }
     private static _removeFromGlobalTouchEventComponent2Ds(component2D: Component2D): void {
-        this._globalTouchEventComponent2Ds.splice(this._globalTouchEventComponent2Ds.indexOf(component2D), 1);
+        const index = this._globalTouchEventComponent2Ds.indexOf(component2D);
+        if (index !== -1) {
+            this._globalTouchEventComponent2Ds.splice(index, 1);
+        }
     }
 
     private static _onTouchStart(event: EventTouch): void {
@@ -225,7 +234,10 @@ export class Component2D extends Component {
     private static _removeFromCollisionEventNodeComponent2DsWeakMap(component2D: Component2D): void {
         const component2Ds = this._collisionEventNodeToComponent2DsWeakMap.get(component2D.node);
         if (component2Ds !== undefined) {
-            component2Ds.splice(component2Ds.indexOf(component2D), 1);
+            const index = component2Ds.indexOf(component2D);
+            if (index !== -1) {
+                component2Ds.splice(index, 1);
+            }
         }
     }
 
@@ -313,6 +325,13 @@ export class Component2D extends Component {
         return this._uiTransform;
     }
 
+    /**
+     * 请使用 __onLoad 方法替代，或者手动调用父类实现
+     * ```typescript
+     * super.onLoad();
+     * // ...
+     * ```
+     */
     protected onLoad(): void {
         Component2D._init();
 
@@ -331,7 +350,17 @@ export class Component2D extends Component {
 
         this.__tryGetUITransform();
         this.__registerEvents();
+
+        this.__onLoad();
     }
+
+    /**
+     * 请使用 __onLoad 方法替代，或者手动调用父类实现
+     * ```typescript
+     * super.onDestroy();
+     * // ...
+     * ```
+     */
     protected onDestroy(): void {
         if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalKeyboard)) {
             Component2D._removeFromGlobalKeyboardEventComponent2Ds(this);
@@ -347,7 +376,18 @@ export class Component2D extends Component {
         }
 
         this.__unregisterEvents();
+
+        this.__onDestroy();
     }
+
+    /**
+     * 当附加到一个激活的节点上或者其节点第一次激活时候调用。onLoad 总是会在任何 start 方法调用前执行，这能用于安排脚本的初始化顺序。 该方法为生命周期方法，父类未必会有实现。并且你只能在该方法内部调用父类的实现，不可在其它地方直接调用该方法。
+     */
+    protected __onLoad(): void {}
+    /**
+     * 当该组件被销毁时调用 该方法为生命周期方法，父类未必会有实现。并且你只能在该方法内部调用父类的实现，不可在其它地方直接调用该方法。
+     */
+    protected __onDestroy(): void {}
 
     /************************************ 初始化 ************************************/
     private __registerEvents(): void {
