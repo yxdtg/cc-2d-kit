@@ -471,9 +471,9 @@ export class Component2D extends Component {
     }
 
     private __onComponentAdded(component: Component): void {
-        if (this._uiRendererComponent === null) {
+        if (this._uiRenderer === null) {
             if (component instanceof UIRenderer) {
-                this._uiRendererComponent = component;
+                this._uiRenderer = component;
                 this._applyColor();
             }
         }
@@ -521,8 +521,8 @@ export class Component2D extends Component {
     }
 
     private __onComponentRemoved(component: Component): void {
-        if (this._uiRendererComponent === component) {
-            this._uiRendererComponent = null;
+        if (this._uiRenderer === component) {
+            this._uiRenderer = null;
         }
     }
 
@@ -687,20 +687,20 @@ export class Component2D extends Component {
     }
 
     private _applyColor() {
-        if (this.uiRendererComponent) {
-            this.uiRendererComponent.color = this.color;
+        if (this.uiRenderer) {
+            this.uiRenderer.color = this.color;
         }
     }
 
-    private _uiRendererComponent: UIRenderer | null = null;
+    private _uiRenderer: UIRenderer | null = null;
     /**
      * 获取UI渲染器组件
      */
-    public get uiRendererComponent() {
-        if (this._uiRendererComponent === null) {
-            this._uiRendererComponent = this.getComponent(UIRenderer);
+    public get uiRenderer() {
+        if (this._uiRenderer === null) {
+            this._uiRenderer = this.getComponent(UIRenderer);
         }
-        return this._uiRendererComponent;
+        return this._uiRenderer;
     }
 
     /**
