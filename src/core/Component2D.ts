@@ -17,6 +17,7 @@ import {
     PhysicsSystem2D,
     UIRenderer,
     UITransform,
+    Vec2,
     Vec3,
     type IPhysics2DContact,
 } from "cc";
@@ -116,6 +117,20 @@ export class Component2D extends Component {
     }
 
     /************************************ 鼠标 ************************************/
+    private static _mouseLocation = new Vec2();
+    private static _mouseLocationV3 = new Vec3();
+
+    private static _mouseUILocation = new Vec2();
+    private static _mouseUILocationV3 = new Vec3();
+
+    private static _updateMouseLocation(event: EventMouse | EventTouch): void {
+        this._mouseLocation.set(event.getLocation());
+        this._mouseLocationV3.set(this._mouseLocation.x, this._mouseLocation.y);
+
+        this._mouseUILocation.set(event.getUILocation());
+        this._mouseUILocationV3.set(this._mouseUILocation.x, this._mouseUILocation.y);
+    }
+
     private static _mouseButtonDownSet = new Set<number>();
     private static _mouseButtonHoldSet = new Set<number>();
     private static _mouseButtonUpSet = new Set<number>();
@@ -136,11 +151,15 @@ export class Component2D extends Component {
         this._mouseButtonDownSet.add(button);
         this._mouseButtonHoldSet.add(button);
 
+        this._updateMouseLocation(event);
+
         for (const component2D of this._globalMouseComponent2Ds) {
             component2D.onGlobalMouseDown?.(event);
         }
     }
     private static _onMouseMove(event: EventMouse): void {
+        this._updateMouseLocation(event);
+
         for (const component2D of this._globalMouseComponent2Ds) {
             component2D.onGlobalMouseMove?.(event);
         }
@@ -150,6 +169,8 @@ export class Component2D extends Component {
         this._mouseButtonDownSet.delete(button);
         this._mouseButtonHoldSet.delete(button);
         this._mouseButtonUpSet.add(button);
+
+        this._updateMouseLocation(event);
 
         for (const component2D of this._globalMouseComponent2Ds) {
             component2D.onGlobalMouseUp?.(event);
@@ -184,11 +205,15 @@ export class Component2D extends Component {
             this._touchIdHoldSet.add(touchId);
         }
 
+        this._updateMouseLocation(event);
+
         for (const component2D of this._globalTouchEventComponent2Ds) {
             component2D.onGlobalTouchStart?.(event);
         }
     }
     private static _onTouchMove(event: EventTouch): void {
+        this._updateMouseLocation(event);
+
         for (const component2D of this._globalTouchEventComponent2Ds) {
             component2D.onGlobalTouchMove?.(event);
         }
@@ -201,6 +226,8 @@ export class Component2D extends Component {
             this._touchIdUpSet.add(touchId);
         }
 
+        this._updateMouseLocation(event);
+
         for (const component2D of this._globalTouchEventComponent2Ds) {
             component2D.onGlobalTouchEnd?.(event);
         }
@@ -212,6 +239,8 @@ export class Component2D extends Component {
             this._touchIdHoldSet.delete(touchId);
             this._touchIdUpSet.add(touchId);
         }
+
+        this._updateMouseLocation(event);
 
         for (const component2D of this._globalTouchEventComponent2Ds) {
             component2D.onGlobalTouchCancel?.(event);
@@ -321,12 +350,15 @@ export class Component2D extends Component {
     /************************************ 实例 ************************************/
 
     private _uiTransform: UITransform = null!;
+    /**
+     * UITransform组件
+     */
     public get uiTransform() {
         return this._uiTransform;
     }
 
     /**
-     * 请使用 __onLoad 方法替代，或者手动调用父类实现
+     * @deprecated 请使用 __onLoad 方法替代，或者在 onLoad 手动调用父类实现
      * ```typescript
      * super.onLoad();
      * // ...
@@ -355,7 +387,7 @@ export class Component2D extends Component {
     }
 
     /**
-     * 请使用 __onLoad 方法替代，或者手动调用父类实现
+     * @deprecated 请使用 __onDestroy 方法替代，或者在 onLoad 手动调用父类实现
      * ```typescript
      * super.onDestroy();
      * // ...
@@ -693,15 +725,41 @@ export class Component2D extends Component {
     /************************************ 轮询调用方法 ************************************/
 
     /**
+     * 鼠标(触点)相对于左下角的位置
+     */
+    protected get mousePosition(): Readonly<Vec2> {
+        return Component2D._mouseLocation;
+    }
+    /**
+     * 鼠标(触点)相对于左下角的位置(Vec3)
+     */
+    protected get mousePositionV3(): Readonly<Vec3> {
+        return Component2D._mouseLocationV3;
+    }
+
+    /**
+     * 鼠标(触点)UI坐标系下的位置
+     */
+    protected get mouseUIPosition(): Readonly<Vec2> {
+        return Component2D._mouseUILocation;
+    }
+    /**
+     * 鼠标(触点)UI坐标系下的位置(Vec3)
+     */
+    protected get mouseUIPositionV3(): Readonly<Vec3> {
+        return Component2D._mouseUILocationV3;
+    }
+
+    /**
      * 是否有任意按键按下(只在按下那一帧有效)
      */
-    public isGlobalKeyDown(): boolean;
+    protected isGlobalKeyDown(): boolean;
     /**
      * 指定按键是否按下(只在按下那一帧有效)
      * @param keyCode
      */
-    public isGlobalKeyDown(keyCode: KeyCode): boolean;
-    public isGlobalKeyDown(keyCode?: KeyCode): boolean {
+    protected isGlobalKeyDown(keyCode: KeyCode): boolean;
+    protected isGlobalKeyDown(keyCode?: KeyCode): boolean {
         if (keyCode !== undefined) {
             return Component2D._keyDownCodeSet.has(keyCode);
         }
@@ -711,13 +769,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意按键按住
      */
-    public isGlobalKeyHold(): boolean;
+    protected isGlobalKeyHold(): boolean;
     /**
      * 指定按键是否按住
      * @param keyCode
      */
-    public isGlobalKeyHold(keyCode: KeyCode): boolean;
-    public isGlobalKeyHold(keyCode?: KeyCode): boolean {
+    protected isGlobalKeyHold(keyCode: KeyCode): boolean;
+    protected isGlobalKeyHold(keyCode?: KeyCode): boolean {
         if (keyCode !== undefined) {
             return Component2D._keyHoldCodeSet.has(keyCode);
         }
@@ -727,13 +785,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意按键松开(只在松开的那一帧有效)
      */
-    public isGlobalKeyUp(): boolean;
+    protected isGlobalKeyUp(): boolean;
     /**
      * 指定按键是否松开(只在松开的那一帧有效)
      * @param keyCode
      */
-    public isGlobalKeyUp(keyCode: KeyCode): boolean;
-    public isGlobalKeyUp(keyCode?: KeyCode): boolean {
+    protected isGlobalKeyUp(keyCode: KeyCode): boolean;
+    protected isGlobalKeyUp(keyCode?: KeyCode): boolean {
         if (keyCode !== undefined) {
             return Component2D._keyUpCodeSet.has(keyCode);
         }
@@ -743,13 +801,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意鼠标按钮按下(只在按下那一帧有效)
      */
-    public isGlobalMouseDown(): boolean;
+    protected isGlobalMouseDown(): boolean;
     /**
      * 指定鼠标按钮是否按下(只在按下那一帧有效)
      * @param button
      */
-    public isGlobalMouseDown(button: number): boolean;
-    public isGlobalMouseDown(button?: number): boolean {
+    protected isGlobalMouseDown(button: number): boolean;
+    protected isGlobalMouseDown(button?: number): boolean {
         if (button !== undefined) {
             return Component2D._mouseButtonDownSet.has(button);
         }
@@ -759,13 +817,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意鼠标按钮按住
      */
-    public isGlobalMouseHold(): boolean;
+    protected isGlobalMouseHold(): boolean;
     /**
      * 指定鼠标按钮是否按住
      * @param button
      */
-    public isGlobalMouseHold(button: number): boolean;
-    public isGlobalMouseHold(button?: number): boolean {
+    protected isGlobalMouseHold(button: number): boolean;
+    protected isGlobalMouseHold(button?: number): boolean {
         if (button !== undefined) {
             return Component2D._mouseButtonHoldSet.has(button);
         }
@@ -775,13 +833,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意鼠标按钮松开(只在松开那一帧有效)
      */
-    public isGlobalMouseUp(): boolean;
+    protected isGlobalMouseUp(): boolean;
     /**
      * 指定鼠标按钮是否松开(只在松开的那一帧有效)
      * @param button
      */
-    public isGlobalMouseUp(button: number): boolean;
-    public isGlobalMouseUp(button?: number): boolean {
+    protected isGlobalMouseUp(button: number): boolean;
+    protected isGlobalMouseUp(button?: number): boolean {
         if (button !== undefined) {
             return Component2D._mouseButtonUpSet.has(button);
         }
@@ -791,13 +849,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意触摸按下(只在按下那一帧有效)
      */
-    public isGlobalTouchDown(): boolean;
+    protected isGlobalTouchDown(): boolean;
     /**
      * 指定触摸ID是否按下(只在按下那一帧有效)
      * @param touchId
      */
-    public isGlobalTouchDown(touchId: number): boolean;
-    public isGlobalTouchDown(touchId?: number): boolean {
+    protected isGlobalTouchDown(touchId: number): boolean;
+    protected isGlobalTouchDown(touchId?: number): boolean {
         if (touchId !== undefined) {
             return Component2D._touchIdDownSet.has(touchId);
         }
@@ -807,13 +865,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意触摸按住
      */
-    public isGlobalTouchHold(): boolean;
+    protected isGlobalTouchHold(): boolean;
     /**
      * 指定触摸ID是否按住
      * @param touchId
      */
-    public isGlobalTouchHold(touchId: number): boolean;
-    public isGlobalTouchHold(touchId?: number): boolean {
+    protected isGlobalTouchHold(touchId: number): boolean;
+    protected isGlobalTouchHold(touchId?: number): boolean {
         if (touchId !== undefined) {
             return Component2D._touchIdHoldSet.has(touchId);
         }
@@ -823,13 +881,13 @@ export class Component2D extends Component {
     /**
      * 是否有任意触摸松开(只在松开那一帧有效)
      */
-    public isGlobalTouchUp(): boolean;
+    protected isGlobalTouchUp(): boolean;
     /**
      * 指定触摸ID是否松开(只在松开那一帧有效)
      * @param touchId
      */
-    public isGlobalTouchUp(touchId: number): boolean;
-    public isGlobalTouchUp(touchId?: number): boolean {
+    protected isGlobalTouchUp(touchId: number): boolean;
+    protected isGlobalTouchUp(touchId?: number): boolean {
         if (touchId !== undefined) {
             return Component2D._touchIdUpSet.has(touchId);
         }
@@ -842,53 +900,53 @@ export class Component2D extends Component {
      * 鼠标在节点区域内按下时触发
      * @param event
      */
-    public onMouseDown?(event: EventMouse): void;
+    protected onMouseDown?(event: EventMouse): void;
     /**
      * 鼠标在节点区域内移动时触发(不论是否按下)
      * @param event
      */
-    public onMouseMove?(event: EventMouse): void;
+    protected onMouseMove?(event: EventMouse): void;
     /**
      * 鼠标在节点区域内松开时触发
      * @param event
      */
-    public onMouseUp?(event: EventMouse): void;
+    protected onMouseUp?(event: EventMouse): void;
     /**
      * 鼠标在节点区域内滚轮滚动时触发(不论是否按下)
      * @param event
      */
-    public onMouseWheel?(event: EventMouse): void;
+    protected onMouseWheel?(event: EventMouse): void;
     /**
      * 鼠标移入目标节点区域内时触发(不论是否按下)
      * @param event
      */
-    public onMouseEnter?(event: EventMouse): void;
+    protected onMouseEnter?(event: EventMouse): void;
     /**
      * 鼠标移出目标节点区域内时触发(不论是否按下)
      * @param event
      */
-    public onMouseLeave?(event: EventMouse): void;
+    protected onMouseLeave?(event: EventMouse): void;
 
     /**
      * 手指在节点区域内触摸开始时触发
      * @param event
      */
-    public onTouchStart?(event: EventTouch): void;
+    protected onTouchStart?(event: EventTouch): void;
     /**
      * 手指在节点区域内触摸移动时触发
      * @param event
      */
-    public onTouchMove?(event: EventTouch): void;
+    protected onTouchMove?(event: EventTouch): void;
     /**
      * 手指在节点区域内触摸结束时触发
      * @param event
      */
-    public onTouchEnd?(event: EventTouch): void;
+    protected onTouchEnd?(event: EventTouch): void;
     /**
      * 手指在节点区域外触摸取消时触发
      * @param event
      */
-    public onTouchCancel?(event: EventTouch): void;
+    protected onTouchCancel?(event: EventTouch): void;
 
     /**
      * 碰撞体开始接触时触发(只在两个碰撞体开始接触时触发一次)
@@ -896,7 +954,7 @@ export class Component2D extends Component {
      * @param otherCollider
      * @param contact
      */
-    public onBeginContact?(
+    protected onBeginContact?(
         selfCollider: Collider2D,
         otherCollider: Collider2D,
         contact: IPhysics2DContact | null
@@ -907,74 +965,82 @@ export class Component2D extends Component {
      * @param otherCollider
      * @param contact
      */
-    public onEndContact?(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null): void;
+    protected onEndContact?(
+        selfCollider: Collider2D,
+        otherCollider: Collider2D,
+        contact: IPhysics2DContact | null
+    ): void;
     /**
      * 每次将要处理碰撞体接触逻辑时被调用
      * @param selfCollider
      * @param otherCollider
      * @param contact
      */
-    public onPreSolve?(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null): void;
+    protected onPreSolve?(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null): void;
     /**
      * 每次处理完碰撞体接触逻辑时被调用
      * @param selfCollider
      * @param otherCollider
      * @param contact
      */
-    public onPostSolve?(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null): void;
+    protected onPostSolve?(
+        selfCollider: Collider2D,
+        otherCollider: Collider2D,
+        contact: IPhysics2DContact | null
+    ): void;
 
     /**
      * 按键按下时触发(持续触发)
      * @param event
      */
-    public onGlobalKeyDown?(event: EventKeyboard): void;
+    protected onGlobalKeyDown?(event: EventKeyboard): void;
     /**
      * 按键松开时触发
      * @param event
      */
-    public onGlobalKeyUp?(event: EventKeyboard): void;
+    protected onGlobalKeyUp?(event: EventKeyboard): void;
 
     /**
      * 鼠标按下时触发
      * @param event
      */
-    public onGlobalMouseDown?(event: EventMouse): void;
+    protected onGlobalMouseDown?(event: EventMouse): void;
     /**
      * 鼠标移动时触发(不论是否按下)
      * @param event
      */
-    public onGlobalMouseMove?(event: EventMouse): void;
+    protected onGlobalMouseMove?(event: EventMouse): void;
     /**
      * 鼠标在松开时触发
      * @param event
      */
-    public onGlobalMouseUp?(event: EventMouse): void;
+    protected onGlobalMouseUp?(event: EventMouse): void;
     /**
      * 鼠标在滚轮滚动时触发(不论是否按下)
      * @param event
      */
-    public onGlobalMouseWheel?(event: EventMouse): void;
+    protected onGlobalMouseWheel?(event: EventMouse): void;
 
     /**
      * 手指在触摸开始时触发
      * @param event
      */
-    public onGlobalTouchStart?(event: EventTouch): void;
+    protected onGlobalTouchStart?(event: EventTouch): void;
     /**
      * 手指在触摸移动时触发
      * @param event
      */
-    public onGlobalTouchMove?(event: EventTouch): void;
+    protected onGlobalTouchMove?(event: EventTouch): void;
     /**
      * 手指在触摸结束时触发
      * @param event
      */
-    public onGlobalTouchEnd?(event: EventTouch): void;
+    protected onGlobalTouchEnd?(event: EventTouch): void;
     /**
      * 手指在触摸取消时触发
      * @param event
      */
-    public onGlobalTouchCancel?(event: EventTouch): void;
+    protected onGlobalTouchCancel?(event: EventTouch): void;
 }
 
 export interface Component2D {
@@ -985,12 +1051,30 @@ export interface Component2D {
  * Component2D事件类型枚举
  */
 export const COMPONENT_2D_EVENT_TYPE_MAP = {
+    /**
+     * 鼠标事件
+     */
     Mouse: "Mouse",
+    /**
+     * 触摸事件
+     */
     Touch: "Touch",
+    /**
+     * 碰撞事件
+     */
     Collision: "Collision",
 
+    /**
+     * 全局鼠标事件
+     */
     GlobalMouse: "GlobalMouse",
+    /**
+     * 全局触摸事件
+     */
     GlobalTouch: "GlobalTouch",
+    /**
+     * 全局键盘事件
+     */
     GlobalKeyboard: "GlobalKeyboard",
 } as const;
 export type COMPONENT_2D_EVENT_TYPE_MAP =
@@ -1003,14 +1087,7 @@ function getEventTypeEnabled(
     return component2D.EVENT_TYPE_TO_ENABLED_MAP?.[eventType] ?? false;
 }
 
-/**
- * 设置Component2D事件类型启用状态
- * @param eventTypeToEnabledMap
- * @returns
- */
-export function setComponent2DEventTypeEnabledMap(
-    eventTypeToEnabledMap?: Partial<Record<COMPONENT_2D_EVENT_TYPE_MAP, boolean>>
-): Function {
+export function enableEvents(eventTypeToEnabledMap?: Partial<Record<COMPONENT_2D_EVENT_TYPE_MAP, boolean>>): Function {
     return function (target: typeof Component2D) {
         target.prototype.EVENT_TYPE_TO_ENABLED_MAP = {
             ...(target.prototype.EVENT_TYPE_TO_ENABLED_MAP ?? {}),
