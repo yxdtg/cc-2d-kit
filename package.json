@@ -1,7 +1,7 @@
 {
     "name": "cc-2d-kit",
-    "version": "0.0.2",
-    "description": "cc-2d-kit",
+    "version": "0.0.3",
+    "description": "CocosCreator2D游戏开发工具包🚀",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [

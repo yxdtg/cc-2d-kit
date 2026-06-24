@@ -1,34 +1,68 @@
 # cc-2d-kit
 
-# 安装
+## CocosCreator2D游戏开发工具包🚀
+
+- Component2D: 继承Component, 用于提升2D游戏开发体验
+- ...
+
+## 安装
 
 ```bash
 npm install cc-2d-kit
 ```
 
-# 使用
+## 快速开始(简单的移动例子)
 
 ```typescript
-import { _decorator, Collider2D, EventKeyboard, EventMouse, EventTouch, IPhysics2DContact, KeyCode } from "cc";
-import { Component2D, enableEvents, MOUSE_BUTTON } from "cc-2d-kit";
+import { _decorator, Node, CCFloat, KeyCode } from "cc";
+import { Component2D, registerComponent2D } from "cc-2d-kit";
 
 const { ccclass, property } = _decorator;
 
-@enableEvents({ Mouse: true, Touch: true, Collision: true, GlobalKeyboard: true, GlobalMouse: true, GlobalTouch: true })
+@registerComponent2D({
+    enableEvents: ["GlobalKeyboard"],
+})
+@ccclass("Player")
+export class Player extends Component2D {
+    @property(CCFloat)
+    public speed = 200;
+
+    protected update(dt: number): void {
+        let vx = 0;
+        let vy = 0;
+
+        if (this.isGlobalKeyHold(KeyCode.KEY_W)) {
+            vy += 1;
+        }
+        if (this.isGlobalKeyHold(KeyCode.KEY_S)) {
+            vy -= 1;
+        }
+        if (this.isGlobalKeyHold(KeyCode.KEY_A)) {
+            vx -= 1;
+        }
+        if (this.isGlobalKeyHold(KeyCode.KEY_D)) {
+            vx += 1;
+        }
+
+        this.x += vx * this.speed * dt;
+        this.y += vy * this.speed * dt;
+    }
+}
+```
+
+## 详细使用
+
+```typescript
+import { _decorator, Collider2D, EventKeyboard, EventMouse, EventTouch, IPhysics2DContact, KeyCode } from "cc";
+import { Component2D, registerComponent2D, MOUSE_BUTTON } from "cc-2d-kit";
+
+const { ccclass, property } = _decorator;
+
+@registerComponent2D({
+    enableEvents: ["Mouse", "Touch", "Collision", "GlobalKeyboard", "GlobalMouse", "GlobalTouch"],
+})
 @ccclass("NewComponent2D")
 export class NewComponent2D extends Component2D {
-    // 使用 __onLoad 方法替代 onLoad，或者在 onLoad 手动调用父类实现
-    protected __onLoad(): void {}
-    // protected onLoad(): void {
-    //     super.onLoad();
-    // }
-
-    // 使用 __onDestroy 方法替代 onDestroy，或者在 onDestroy 手动调用父类实现
-    protected __onDestroy(): void {}
-    // protected onDestroy(): void {
-    //     super.onDestroy();
-    // }
-
     // 属性、方法介绍
     protected update(dt: number): void {
         // 位置
@@ -141,10 +175,10 @@ export class NewComponent2D extends Component2D {
         }
     }
 
-    // 装饰器加入指定类型事件后，会自动注册注销事件
-    // @enableEvents({ Mouse: true, Touch: true, Collision: true, GlobalKeyboard: true, GlobalMouse: true, GlobalTouch: true })
+    // 装饰器加入指定类型事件后，会自动注册注销对应事件
+    // enableEvents: ["Mouse", "Touch", "Collision", "GlobalKeyboard", "GlobalMouse", "GlobalTouch"],
 
-    // Mouse: true 开启鼠标事件
+    // Mouse 开启鼠标事件
     protected onMouseDown(event: EventMouse): void {}
     protected onMouseMove(event: EventMouse): void {}
     protected onMouseUp(event: EventMouse): void {}
@@ -152,13 +186,13 @@ export class NewComponent2D extends Component2D {
     protected onMouseEnter(event: EventMouse): void {}
     protected onMouseLeave(event: EventMouse): void {}
 
-    // Touch: true 开启触摸事件
+    // Touch 开启触摸事件
     protected onTouchStart(event: EventTouch): void {}
     protected onTouchMove(event: EventTouch): void {}
     protected onTouchEnd(event: EventTouch): void {}
     protected onTouchCancel(event: EventTouch): void {}
 
-    // Collision: true 开启碰撞事件
+    // Collision 开启碰撞事件
     protected onBeginContact(
         selfCollider: Collider2D,
         otherCollider: Collider2D,
@@ -180,17 +214,17 @@ export class NewComponent2D extends Component2D {
         contact: IPhysics2DContact | null
     ): void {}
 
-    // GlobalKeyboard: true 开启全局键盘事件
+    // GlobalKeyboard 开启全局键盘事件
     protected onGlobalKeyDown(event: EventKeyboard): void {}
     protected onGlobalKeyUp(event: EventKeyboard): void {}
 
-    // GlobalMouse: true 开启全局鼠标事件
+    // GlobalMouse 开启全局鼠标事件
     protected onGlobalMouseDown(event: EventMouse): void {}
     protected onGlobalMouseMove(event: EventMouse): void {}
     protected onGlobalMouseUp(event: EventMouse): void {}
     protected onGlobalMouseWheel(event: EventMouse): void {}
 
-    // GlobalTouch: true 开启全局触摸事件
+    // GlobalTouch 开启全局触摸事件
     protected onGlobalTouchStart(event: EventTouch): void {}
     protected onGlobalTouchMove(event: EventTouch): void {}
     protected onGlobalTouchEnd(event: EventTouch): void {}
@@ -198,26 +232,21 @@ export class NewComponent2D extends Component2D {
 }
 ```
 
-# NewComponent2D脚本模版
+## NewComponent2D脚本模版
 
 ### 用于在CocosCreator编辑器中快速创建脚本
 
 ```typescript
 import { _decorator, Node } from "cc";
-import { Component2D, enableEvents } from "cc-2d-kit";
+import { Component2D, registerComponent2D } from "cc-2d-kit";
 
 const { ccclass, property } = _decorator;
 
-@enableEvents({})
+@registerComponent2D({
+    enableEvents: ["Mouse", "Touch", "Collision", "GlobalKeyboard", "GlobalMouse", "GlobalTouch"],
+})
 @ccclass("<%UnderscoreCaseClassName%>")
 export class <%UnderscoreCaseClassName%> extends Component2D {
-
-    protected __onLoad(): void {
-
-    }
-    protected __onDestroy(): void {
-
-    }
 
 }
 

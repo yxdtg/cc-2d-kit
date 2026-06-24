@@ -23,7 +23,7 @@ import {
 } from "cc";
 
 /**
- * 鼠标按钮枚举
+ * 鼠标键
  */
 export const MOUSE_BUTTON = {
     /**
@@ -82,7 +82,7 @@ export class Component2D extends Component {
         this._touchIdUpSet.clear();
     }
 
-    /************************************ 按键 ************************************/
+    /*----------------------------------- 按键 -----------------------------------*/
     private static _keyDownCodeSet = new Set<KeyCode>();
     private static _keyHoldCodeSet = new Set<KeyCode>();
     private static _keyUpCodeSet = new Set<KeyCode>();
@@ -116,7 +116,7 @@ export class Component2D extends Component {
         }
     }
 
-    /************************************ 鼠标 ************************************/
+    /*----------------------------------- 鼠标 -----------------------------------*/
     private static _mouseLocation = new Vec2();
     private static _mouseLocationV3 = new Vec3();
 
@@ -182,7 +182,7 @@ export class Component2D extends Component {
         }
     }
 
-    /************************************ 触摸 ************************************/
+    /*----------------------------------- 触摸 -----------------------------------*/
     private static _touchIdDownSet = new Set<number>();
     private static _touchIdHoldSet = new Set<number>();
     private static _touchIdUpSet = new Set<number>();
@@ -247,7 +247,7 @@ export class Component2D extends Component {
         }
     }
 
-    /************************************ 碰撞 ************************************/
+    /*----------------------------------- 碰撞 -----------------------------------*/
     private static _collisionEventNodeToComponent2DsWeakMap = new WeakMap<Node, Component2D[]>();
     private static _getCollisionEventNodeComponent2DsWeakMap(node: Node) {
         return this._collisionEventNodeToComponent2DsWeakMap.get(node);
@@ -347,7 +347,7 @@ export class Component2D extends Component {
         }
     }
 
-    /************************************ 实例 ************************************/
+    /*----------------------------------- 实例 -----------------------------------*/
 
     private _uiTransform: UITransform = null!;
     /**
@@ -358,75 +358,54 @@ export class Component2D extends Component {
     }
 
     /**
-     * @deprecated 请使用 __onLoad 方法替代，或者在 onLoad 手动调用父类实现
-     * ```typescript
-     * super.onLoad();
-     * // ...
-     * ```
+     * @internal
      */
-    protected onLoad(): void {
+    public _register(): void {
         Component2D._init();
 
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalKeyboard)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalKeyboard)) {
             Component2D._addToGlobalKeyboardEventComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalMouse)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalMouse)) {
             Component2D._addToGlobalMouseComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalTouch)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalTouch)) {
             Component2D._addToGlobalTouchEventComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Collision)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Collision)) {
             Component2D._addToCollisionEventNodeComponent2DsWeakMap(this);
         }
 
-        this.__tryGetUITransform();
-        this.__registerEvents();
-
-        this.__onLoad();
+        this._tryGetUITransform();
+        this._registerEvents();
     }
 
     /**
-     * @deprecated 请使用 __onDestroy 方法替代，或者在 onLoad 手动调用父类实现
-     * ```typescript
-     * super.onDestroy();
-     * // ...
-     * ```
+     * @internal
      */
-    protected onDestroy(): void {
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalKeyboard)) {
+    public _unregister(): void {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalKeyboard)) {
             Component2D._removeFromGlobalKeyboardEventComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalMouse)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalMouse)) {
             Component2D._removeFromGlobalMouseComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.GlobalTouch)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalTouch)) {
             Component2D._removeFromGlobalTouchEventComponent2Ds(this);
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Collision)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Collision)) {
             Component2D._removeFromCollisionEventNodeComponent2DsWeakMap(this);
         }
 
-        this.__unregisterEvents();
-
-        this.__onDestroy();
+        this._unregisterEvents();
     }
 
-    /**
-     * 当附加到一个激活的节点上或者其节点第一次激活时候调用。onLoad 总是会在任何 start 方法调用前执行，这能用于安排脚本的初始化顺序。 该方法为生命周期方法，父类未必会有实现。并且你只能在该方法内部调用父类的实现，不可在其它地方直接调用该方法。
-     */
-    protected __onLoad(): void {}
-    /**
-     * 当该组件被销毁时调用 该方法为生命周期方法，父类未必会有实现。并且你只能在该方法内部调用父类的实现，不可在其它地方直接调用该方法。
-     */
-    protected __onDestroy(): void {}
+    /*----------------------------------- 初始化 -----------------------------------*/
+    private _registerEvents(): void {
+        this.node.on(NodeEventType.COMPONENT_ADDED, this._onComponentAdded, this);
+        this.node.on(NodeEventType.COMPONENT_REMOVED, this._onComponentRemoved, this);
 
-    /************************************ 初始化 ************************************/
-    private __registerEvents(): void {
-        this.node.on(NodeEventType.COMPONENT_ADDED, this.__onComponentAdded, this);
-        this.node.on(NodeEventType.COMPONENT_REMOVED, this.__onComponentRemoved, this);
-
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Mouse)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Mouse)) {
             if (this.onMouseDown) {
                 this.node.on(NodeEventType.MOUSE_DOWN, this.onMouseDown, this);
             }
@@ -446,7 +425,7 @@ export class Component2D extends Component {
                 this.node.on(NodeEventType.MOUSE_LEAVE, this.onMouseLeave, this);
             }
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Touch)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Touch)) {
             if (this.onTouchStart) {
                 this.node.on(NodeEventType.TOUCH_START, this.onTouchStart, this);
             }
@@ -462,15 +441,15 @@ export class Component2D extends Component {
         }
     }
 
-    private __tryGetUITransform(): void {
+    private _tryGetUITransform(): void {
         const uiTransform = this.getComponent(UITransform);
         if (uiTransform === null) {
-            return console.error("Component2D: UITransform 不存在");
+            throw new Error("Component2D所属的节点不存在UITransform");
         }
         this._uiTransform = uiTransform;
     }
 
-    private __onComponentAdded(component: Component): void {
+    private _onComponentAdded(component: Component): void {
         if (this._uiRenderer === null) {
             if (component instanceof UIRenderer) {
                 this._uiRenderer = component;
@@ -479,12 +458,12 @@ export class Component2D extends Component {
         }
     }
 
-    /************************************ 注销 ************************************/
-    private __unregisterEvents(): void {
-        this.node.off(NodeEventType.COMPONENT_ADDED, this.__onComponentAdded, this);
-        this.node.off(NodeEventType.COMPONENT_REMOVED, this.__onComponentRemoved, this);
+    /*----------------------------------- 注销 -----------------------------------*/
+    private _unregisterEvents(): void {
+        this.node.off(NodeEventType.COMPONENT_ADDED, this._onComponentAdded, this);
+        this.node.off(NodeEventType.COMPONENT_REMOVED, this._onComponentRemoved, this);
 
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Mouse)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Mouse)) {
             if (this.onMouseDown) {
                 this.node.off(NodeEventType.MOUSE_DOWN, this.onMouseDown, this);
             }
@@ -504,7 +483,7 @@ export class Component2D extends Component {
                 this.node.off(NodeEventType.MOUSE_LEAVE, this.onMouseLeave, this);
             }
         }
-        if (getEventTypeEnabled(this, COMPONENT_2D_EVENT_TYPE_MAP.Touch)) {
+        if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Touch)) {
             if (this.onTouchStart) {
                 this.node.off(NodeEventType.TOUCH_START, this.onTouchStart, this);
             }
@@ -520,13 +499,13 @@ export class Component2D extends Component {
         }
     }
 
-    private __onComponentRemoved(component: Component): void {
+    private _onComponentRemoved(component: Component): void {
         if (this._uiRenderer === component) {
             this._uiRenderer = null;
         }
     }
 
-    /************************************ 属性 ************************************/
+    /*----------------------------------- 属性 -----------------------------------*/
 
     /**
      * x坐标
@@ -722,7 +701,7 @@ export class Component2D extends Component {
         return this._uiTransform.convertToWorldSpaceAR(localPoint, out);
     }
 
-    /************************************ 轮询调用方法 ************************************/
+    /*----------------------------------- 轮询调用方法 -----------------------------------*/
 
     /**
      * 鼠标(触点)相对于左下角的位置
@@ -799,11 +778,11 @@ export class Component2D extends Component {
     }
 
     /**
-     * 是否有任意鼠标按钮按下(只在按下那一帧有效)
+     * 是否有任意鼠标键按下(只在按下那一帧有效)
      */
     protected isGlobalMouseDown(): boolean;
     /**
-     * 指定鼠标按钮是否按下(只在按下那一帧有效)
+     * 指定鼠标键是否按下(只在按下那一帧有效)
      * @param button
      */
     protected isGlobalMouseDown(button: number): boolean;
@@ -815,11 +794,11 @@ export class Component2D extends Component {
     }
 
     /**
-     * 是否有任意鼠标按钮按住
+     * 是否有任意鼠标键按住
      */
     protected isGlobalMouseHold(): boolean;
     /**
-     * 指定鼠标按钮是否按住
+     * 指定鼠标键是否按住
      * @param button
      */
     protected isGlobalMouseHold(button: number): boolean;
@@ -831,11 +810,11 @@ export class Component2D extends Component {
     }
 
     /**
-     * 是否有任意鼠标按钮松开(只在松开那一帧有效)
+     * 是否有任意鼠标键松开(只在松开那一帧有效)
      */
     protected isGlobalMouseUp(): boolean;
     /**
-     * 指定鼠标按钮是否松开(只在松开的那一帧有效)
+     * 指定鼠标键是否松开(只在松开的那一帧有效)
      * @param button
      */
     protected isGlobalMouseUp(button: number): boolean;
@@ -894,7 +873,7 @@ export class Component2D extends Component {
         return Component2D._touchIdUpSet.size > 0;
     }
 
-    /************************************ 可选注册事件方法 ************************************/
+    /*----------------------------------- 可选注册事件方法 -----------------------------------*/
 
     /**
      * 鼠标在节点区域内按下时触发
@@ -1044,13 +1023,13 @@ export class Component2D extends Component {
 }
 
 export interface Component2D {
-    EVENT_TYPE_TO_ENABLED_MAP: Record<COMPONENT_2D_EVENT_TYPE_MAP, boolean>;
+    _eventTypeEnabledSet?: Set<COMPONENT2D_EVENT_TYPE>;
 }
 
 /**
- * Component2D事件类型枚举
+ * Component2D事件类型
  */
-export const COMPONENT_2D_EVENT_TYPE_MAP = {
+export const COMPONENT2D_EVENT_TYPE = {
     /**
      * 鼠标事件
      */
@@ -1077,21 +1056,36 @@ export const COMPONENT_2D_EVENT_TYPE_MAP = {
      */
     GlobalKeyboard: "GlobalKeyboard",
 } as const;
-export type COMPONENT_2D_EVENT_TYPE_MAP =
-    (typeof COMPONENT_2D_EVENT_TYPE_MAP)[keyof typeof COMPONENT_2D_EVENT_TYPE_MAP];
+export type COMPONENT2D_EVENT_TYPE = (typeof COMPONENT2D_EVENT_TYPE)[keyof typeof COMPONENT2D_EVENT_TYPE];
 
 function getEventTypeEnabled(
     component2D: Component2D,
-    eventType: (typeof COMPONENT_2D_EVENT_TYPE_MAP)[keyof typeof COMPONENT_2D_EVENT_TYPE_MAP]
+    eventType: (typeof COMPONENT2D_EVENT_TYPE)[keyof typeof COMPONENT2D_EVENT_TYPE]
 ): boolean {
-    return component2D.EVENT_TYPE_TO_ENABLED_MAP?.[eventType] ?? false;
+    return component2D._eventTypeEnabledSet?.has(eventType) ?? false;
 }
 
-export function enableEvents(eventTypeToEnabledMap?: Partial<Record<COMPONENT_2D_EVENT_TYPE_MAP, boolean>>): Function {
+interface RegisterComponent2DOptions {
+    enableEvents?: COMPONENT2D_EVENT_TYPE[];
+}
+
+export function registerComponent2D(options?: RegisterComponent2DOptions): Function {
     return function (target: typeof Component2D) {
-        target.prototype.EVENT_TYPE_TO_ENABLED_MAP = {
-            ...(target.prototype.EVENT_TYPE_TO_ENABLED_MAP ?? {}),
-            ...(eventTypeToEnabledMap ?? {}),
+        const onLoad = target.prototype["onLoad"];
+        target.prototype["onLoad"] = function () {
+            this._register();
+            onLoad?.call(this);
         };
+
+        const onDestroy = target.prototype["onDestroy"];
+        target.prototype["onDestroy"] = function () {
+            onDestroy?.call(this);
+            this._unregister();
+        };
+
+        target.prototype._eventTypeEnabledSet = new Set([
+            ...[...(target.prototype._eventTypeEnabledSet ?? [])],
+            ...(options?.enableEvents ?? []),
+        ]);
     };
 }
