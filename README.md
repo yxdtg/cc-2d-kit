@@ -53,7 +53,7 @@ export class Player extends Component2D {
 ## 详细使用
 
 ```typescript
-import { _decorator, Collider2D, EventKeyboard, EventMouse, EventTouch, IPhysics2DContact, KeyCode } from "cc";
+import { _decorator, Collider2D, EventKeyboard, EventMouse, EventTouch, IPhysics2DContact, KeyCode, Sprite } from "cc";
 import { Component2D, registerComponent2D, MOUSE_BUTTON } from "cc-2d-kit";
 
 const { ccclass, property } = _decorator;
@@ -90,7 +90,17 @@ export class NewComponent2D extends Component2D {
         this.colorG = 255;
         this.colorB = 255;
         this.colorA = 255;
+        this.colorHex = "#ffffffff";
         this.setColor(255, 255, 255, 255);
+
+        // 批量设置属性
+        this.setProps({ x: 100, y: 100 });
+        // 链式调用
+        this.setProps({ width: 200, height: 200 }).setProps({ angle: 45 });
+
+        // 从缓存中获取组件O(1)
+        console.log(this.getCacheComponent(Sprite));
+        console.log(this.getCacheComponent("Sprite"));
 
         // 当前组件所属节点的UITransform组件
         console.log(this.uiTransform);

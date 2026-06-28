@@ -63,7 +63,7 @@ export class Component2D extends Component {
         input.on(Input.EventType.TOUCH_END, this._onTouchEnd, this);
         input.on(Input.EventType.TOUCH_CANCEL, this._onTouchCancel, this);
 
-        if (PhysicsSystem2D.instance) {
+        if (PhysicsSystem2D !== undefined && PhysicsSystem2D.instance) {
             PhysicsSystem2D.instance.on(Contact2DType.BEGIN_CONTACT, this._onBeginContact, this);
             PhysicsSystem2D.instance.on(Contact2DType.END_CONTACT, this._onEndContact, this);
             PhysicsSystem2D.instance.on(Contact2DType.PRE_SOLVE, this._onPreSolve, this);
@@ -457,6 +457,25 @@ export class Component2D extends Component {
             }
         }
     }
+    private _onComponentRemoved(component: Component): void {
+        if (this._uiRenderer === component) {
+            this._uiRenderer = null;
+        }
+
+        const componentConstructorOrComponentNameToCacheComponentEntries = [
+            ...this._componentConstructorOrComponentNameToCacheComponentMap.entries(),
+        ];
+        for (const [
+            componentConstructorOrComponentName,
+            cacheComponent,
+        ] of componentConstructorOrComponentNameToCacheComponentEntries) {
+            if (cacheComponent === component) {
+                this._componentConstructorOrComponentNameToCacheComponentMap.delete(
+                    componentConstructorOrComponentName
+                );
+            }
+        }
+    }
 
     /*----------------------------------- 注销 -----------------------------------*/
     private _unregisterEvents(): void {
@@ -499,10 +518,50 @@ export class Component2D extends Component {
         }
     }
 
-    private _onComponentRemoved(component: Component): void {
-        if (this._uiRenderer === component) {
-            this._uiRenderer = null;
+    /*----------------------------------- 方法 -----------------------------------*/
+    private _componentConstructorOrComponentNameToCacheComponentMap = new Map<
+        ComponentConstructor<Component> | string,
+        Component
+    >();
+
+    /**
+     * 从缓存中获取组件
+     * @param componentConstructor 组件构造函数
+     */
+    public getCacheComponent<T extends Component>(componentConstructor: ComponentConstructor<T>): T | null;
+    /**
+     * 通过组件名称从缓存中获取组件
+     * @param componentName 组件名称
+     */
+    public getCacheComponent<T extends Component>(componentName: string): T | null;
+    public getCacheComponent<T extends Component>(
+        componentConstructorOrComponentName: ComponentConstructor<T> | string
+    ): T | null {
+        const cacheComponent = this._componentConstructorOrComponentNameToCacheComponentMap.get(
+            componentConstructorOrComponentName
+        );
+        if (cacheComponent !== undefined) return cacheComponent as T | null;
+
+        const component = this.getComponent<T>(componentConstructorOrComponentName as ComponentConstructor<T>);
+        if (component !== null) {
+            this._componentConstructorOrComponentNameToCacheComponentMap.set(
+                componentConstructorOrComponentName,
+                component
+            );
         }
+        return component;
+    }
+
+    /**
+     * 批量设置属性
+     * @param props 属性键值对
+     */
+    public setProps<T extends object = this>(props: Partial<T>): this {
+        for (const key in props) {
+            (this as any)[key] = props[key];
+        }
+
+        return this;
     }
 
     /*----------------------------------- 属性 -----------------------------------*/
@@ -590,7 +649,7 @@ export class Component2D extends Component {
     }
 
     /**
-     * 旋转角度(角度)
+     * 旋转(角度)
      */
     public get angle() {
         return this.node.angle;
@@ -600,13 +659,30 @@ export class Component2D extends Component {
     }
 
     /**
-     * 旋转角度(弧度)
+     * 旋转(弧度)
      */
     public get rotation() {
         return math.toRadian(this.angle);
     }
     public set rotation(value: number) {
         this.angle = math.toDegree(value);
+    }
+
+    private _rotationVector = new Vec2();
+    /**
+     * 旋转向量(只读)
+     */
+    public get rotationVector(): Readonly<Vec2> {
+        this._rotationVector.set(Math.cos(this.rotation), Math.sin(this.rotation));
+        return this._rotationVector;
+    }
+    /**
+     * 通过向量设置旋转
+     * @param x
+     * @param y
+     */
+    public setRotationByVector(x: number, y: number): void {
+        this.rotation = Math.atan2(y, x);
     }
 
     private _color = Color.WHITE.clone();
@@ -653,6 +729,14 @@ export class Component2D extends Component {
         this._applyColor();
     }
 
+    public get colorHex(): string {
+        return this._color.toHEX("#rrggbbaa");
+    }
+    public set colorHex(value: string) {
+        this._color.fromHEX(value);
+        this._applyColor();
+    }
+
     /**
      * 设置颜色
      * @param r
@@ -683,8 +767,8 @@ export class Component2D extends Component {
     }
 
     /**
-     * 将世界坐标转换为本地坐标 (convertToNodeSpaceAR)
-     * @param worldPoint
+     * 将世界坐标系下的点转到本地坐标系(convertToNodeSpaceAR)
+     * @param worldPoint 世界坐标系下的点
      * @param out
      * @returns
      */
@@ -692,8 +776,8 @@ export class Component2D extends Component {
         return this._uiTransform.convertToNodeSpaceAR(worldPoint, out);
     }
     /**
-     * 将本地坐标转换为世界坐标 (convertToWorldSpaceAR)
-     * @param localPoint
+     * 将本地坐标系下的点转到世界坐标系(convertToWorldSpaceAR)
+     * @param localPoint 本地坐标系下的点
      * @param out
      * @returns
      */
@@ -1025,6 +1109,8 @@ export class Component2D extends Component {
 export interface Component2D {
     _eventTypeEnabledSet?: Set<COMPONENT2D_EVENT_TYPE>;
 }
+
+type ComponentConstructor<T extends Component> = new (...args: any[]) => T;
 
 /**
  * Component2D事件类型
