@@ -93,12 +93,17 @@ export class NewComponent2D extends Component2D {
         this.colorHex = "#ffffffff";
         this.setColor(255, 255, 255, 255);
 
-        // 批量设置属性
+        // 批量设置指定节点属性(可链式调用)
+        this.setTargetNodeProps(this.node, { x: 100, y: 100 });
+        // 批量设置自身节点属性(可链式调用)
+        this.setNodeProps({ x: 100, y: 100 });
+        // 批量设置自身属性(可链式调用)
         this.setProps({ x: 100, y: 100 });
-        // 链式调用
-        this.setProps({ width: 200, height: 200 }).setProps({ angle: 45 });
 
-        // 从缓存中获取组件O(1)
+        // 从缓存中获取指定节点组件(高性能)
+        console.log(this.getTargetNodeCacheComponent(Sprite));
+        console.log(this.getTargetNodeCacheComponent("Sprite"));
+        // 从缓存中获取自身节点组件(高性能)
         console.log(this.getCacheComponent(Sprite));
         console.log(this.getCacheComponent("Sprite"));
 

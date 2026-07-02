@@ -10,6 +10,7 @@ import {
     EventTouch,
     Input,
     input,
+    js,
     KeyCode,
     math,
     Node,
@@ -87,22 +88,19 @@ export class Component2D extends Component {
     private static _keyHoldCodeSet = new Set<KeyCode>();
     private static _keyUpCodeSet = new Set<KeyCode>();
 
-    private static _globalKeyboardEventComponent2Ds: Component2D[] = [];
-    private static _addToGlobalKeyboardEventComponent2Ds(component2D: Component2D): void {
-        this._globalKeyboardEventComponent2Ds.push(component2D);
+    private static _globalKeyboardEventComponent2DSet = new Set<Component2D>();
+    private static _addToGlobalKeyboardEventComponent2DSet(component2D: Component2D): void {
+        this._globalKeyboardEventComponent2DSet.add(component2D);
     }
-    private static _removeFromGlobalKeyboardEventComponent2Ds(component2D: Component2D): void {
-        const index = this._globalKeyboardEventComponent2Ds.indexOf(component2D);
-        if (index !== -1) {
-            this._globalKeyboardEventComponent2Ds.splice(index, 1);
-        }
+    private static _deleteFromGlobalKeyboardEventComponent2DSet(component2D: Component2D): void {
+        this._globalKeyboardEventComponent2DSet.delete(component2D);
     }
 
     private static _onKeyDown(event: EventKeyboard): void {
         this._keyDownCodeSet.add(event.keyCode);
         this._keyHoldCodeSet.add(event.keyCode);
 
-        for (const component2D of this._globalKeyboardEventComponent2Ds) {
+        for (const component2D of this._globalKeyboardEventComponent2DSet) {
             component2D.onGlobalKeyDown?.(event);
         }
     }
@@ -111,7 +109,7 @@ export class Component2D extends Component {
         this._keyHoldCodeSet.delete(event.keyCode);
         this._keyUpCodeSet.add(event.keyCode);
 
-        for (const component2D of this._globalKeyboardEventComponent2Ds) {
+        for (const component2D of this._globalKeyboardEventComponent2DSet) {
             component2D.onGlobalKeyUp?.(event);
         }
     }
@@ -135,15 +133,12 @@ export class Component2D extends Component {
     private static _mouseButtonHoldSet = new Set<number>();
     private static _mouseButtonUpSet = new Set<number>();
 
-    private static _globalMouseComponent2Ds: Component2D[] = [];
-    private static _addToGlobalMouseComponent2Ds(component2D: Component2D): void {
-        this._globalMouseComponent2Ds.push(component2D);
+    private static _globalMouseComponent2DSet = new Set<Component2D>();
+    private static _addToGlobalMouseComponent2DSet(component2D: Component2D): void {
+        this._globalMouseComponent2DSet.add(component2D);
     }
-    private static _removeFromGlobalMouseComponent2Ds(component2D: Component2D): void {
-        const index = this._globalMouseComponent2Ds.indexOf(component2D);
-        if (index !== -1) {
-            this._globalMouseComponent2Ds.splice(index, 1);
-        }
+    private static _deleteFromGlobalMouseComponent2DSet(component2D: Component2D): void {
+        this._globalMouseComponent2DSet.delete(component2D);
     }
 
     private static _onMouseDown(event: EventMouse): void {
@@ -153,14 +148,14 @@ export class Component2D extends Component {
 
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalMouseComponent2Ds) {
+        for (const component2D of this._globalMouseComponent2DSet) {
             component2D.onGlobalMouseDown?.(event);
         }
     }
     private static _onMouseMove(event: EventMouse): void {
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalMouseComponent2Ds) {
+        for (const component2D of this._globalMouseComponent2DSet) {
             component2D.onGlobalMouseMove?.(event);
         }
     }
@@ -172,12 +167,12 @@ export class Component2D extends Component {
 
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalMouseComponent2Ds) {
+        for (const component2D of this._globalMouseComponent2DSet) {
             component2D.onGlobalMouseUp?.(event);
         }
     }
     private static _onMouseWheel(event: EventMouse): void {
-        for (const component2D of this._globalMouseComponent2Ds) {
+        for (const component2D of this._globalMouseComponent2DSet) {
             component2D.onGlobalMouseWheel?.(event);
         }
     }
@@ -187,15 +182,12 @@ export class Component2D extends Component {
     private static _touchIdHoldSet = new Set<number>();
     private static _touchIdUpSet = new Set<number>();
 
-    private static _globalTouchEventComponent2Ds: Component2D[] = [];
-    private static _addToGlobalTouchEventComponent2Ds(component2D: Component2D): void {
-        this._globalTouchEventComponent2Ds.push(component2D);
+    private static _globalTouchEventComponent2DSet = new Set<Component2D>();
+    private static _addToGlobalTouchEventComponent2DSet(component2D: Component2D): void {
+        this._globalTouchEventComponent2DSet.add(component2D);
     }
-    private static _removeFromGlobalTouchEventComponent2Ds(component2D: Component2D): void {
-        const index = this._globalTouchEventComponent2Ds.indexOf(component2D);
-        if (index !== -1) {
-            this._globalTouchEventComponent2Ds.splice(index, 1);
-        }
+    private static _deleteFromGlobalTouchEventComponent2DSet(component2D: Component2D): void {
+        this._globalTouchEventComponent2DSet.delete(component2D);
     }
 
     private static _onTouchStart(event: EventTouch): void {
@@ -207,14 +199,14 @@ export class Component2D extends Component {
 
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalTouchEventComponent2Ds) {
+        for (const component2D of this._globalTouchEventComponent2DSet) {
             component2D.onGlobalTouchStart?.(event);
         }
     }
     private static _onTouchMove(event: EventTouch): void {
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalTouchEventComponent2Ds) {
+        for (const component2D of this._globalTouchEventComponent2DSet) {
             component2D.onGlobalTouchMove?.(event);
         }
     }
@@ -228,7 +220,7 @@ export class Component2D extends Component {
 
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalTouchEventComponent2Ds) {
+        for (const component2D of this._globalTouchEventComponent2DSet) {
             component2D.onGlobalTouchEnd?.(event);
         }
     }
@@ -242,32 +234,28 @@ export class Component2D extends Component {
 
         this._updateMouseLocation(event);
 
-        for (const component2D of this._globalTouchEventComponent2Ds) {
+        for (const component2D of this._globalTouchEventComponent2DSet) {
             component2D.onGlobalTouchCancel?.(event);
         }
     }
 
     /*----------------------------------- 碰撞 -----------------------------------*/
-    private static _collisionEventNodeToComponent2DsWeakMap = new WeakMap<Node, Component2D[]>();
-    private static _getCollisionEventNodeComponent2DsWeakMap(node: Node) {
-        return this._collisionEventNodeToComponent2DsWeakMap.get(node);
+    private static _collisionEventNodeToComponent2DSetWeakMap = new WeakMap<Node, Set<Component2D>>();
+    private static _getCollisionEventNodeComponent2DSetWeakMap(node: Node) {
+        return this._collisionEventNodeToComponent2DSetWeakMap.get(node);
     }
-    private static _addToCollisionEventNodeComponent2DsWeakMap(component2D: Component2D): void {
-        const component2Ds = this._collisionEventNodeToComponent2DsWeakMap.get(component2D.node);
-        if (component2Ds !== undefined) {
-            component2Ds.push(component2D);
-        } else {
-            this._collisionEventNodeToComponent2DsWeakMap.set(component2D.node, [component2D]);
+    private static _addToCollisionEventNodeComponent2DSetWeakMap(component2D: Component2D): void {
+        let component2DSet = this._collisionEventNodeToComponent2DSetWeakMap.get(component2D.node);
+        if (component2DSet === undefined) {
+            component2DSet = new Set<Component2D>();
+            this._collisionEventNodeToComponent2DSetWeakMap.set(component2D.node, component2DSet);
         }
+
+        component2DSet.add(component2D);
     }
-    private static _removeFromCollisionEventNodeComponent2DsWeakMap(component2D: Component2D): void {
-        const component2Ds = this._collisionEventNodeToComponent2DsWeakMap.get(component2D.node);
-        if (component2Ds !== undefined) {
-            const index = component2Ds.indexOf(component2D);
-            if (index !== -1) {
-                component2Ds.splice(index, 1);
-            }
-        }
+    private static _deleteFromCollisionEventNodeComponent2DSetWeakMap(component2D: Component2D): void {
+        const component2DSet = this._collisionEventNodeToComponent2DSetWeakMap.get(component2D.node);
+        component2DSet?.delete(component2D);
     }
 
     private static _onBeginContact(
@@ -275,16 +263,16 @@ export class Component2D extends Component {
         otherCollider: Collider2D,
         contact: IPhysics2DContact | null
     ): void {
-        const selfColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(selfCollider.node);
-        if (selfColliderComponent2Ds !== undefined) {
-            for (const selfColliderComponent2D of selfColliderComponent2Ds) {
+        const selfColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(selfCollider.node);
+        if (selfColliderComponent2DSet !== undefined) {
+            for (const selfColliderComponent2D of selfColliderComponent2DSet) {
                 selfColliderComponent2D.onBeginContact?.(selfCollider, otherCollider, contact);
             }
         }
 
-        const otherColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(otherCollider.node);
-        if (otherColliderComponent2Ds !== undefined) {
-            for (const otherColliderComponent2D of otherColliderComponent2Ds) {
+        const otherColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(otherCollider.node);
+        if (otherColliderComponent2DSet !== undefined) {
+            for (const otherColliderComponent2D of otherColliderComponent2DSet) {
                 otherColliderComponent2D.onBeginContact?.(otherCollider, selfCollider, contact);
             }
         }
@@ -294,16 +282,16 @@ export class Component2D extends Component {
         otherCollider: Collider2D,
         contact: IPhysics2DContact | null
     ): void {
-        const selfColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(selfCollider.node);
-        if (selfColliderComponent2Ds !== undefined) {
-            for (const selfColliderComponent2D of selfColliderComponent2Ds) {
+        const selfColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(selfCollider.node);
+        if (selfColliderComponent2DSet !== undefined) {
+            for (const selfColliderComponent2D of selfColliderComponent2DSet) {
                 selfColliderComponent2D.onEndContact?.(selfCollider, otherCollider, contact);
             }
         }
 
-        const otherColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(otherCollider.node);
-        if (otherColliderComponent2Ds !== undefined) {
-            for (const otherColliderComponent2D of otherColliderComponent2Ds) {
+        const otherColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(otherCollider.node);
+        if (otherColliderComponent2DSet !== undefined) {
+            for (const otherColliderComponent2D of otherColliderComponent2DSet) {
                 otherColliderComponent2D.onEndContact?.(otherCollider, selfCollider, contact);
             }
         }
@@ -313,16 +301,16 @@ export class Component2D extends Component {
         otherCollider: Collider2D,
         contact: IPhysics2DContact | null
     ): void {
-        const selfColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(selfCollider.node);
-        if (selfColliderComponent2Ds !== undefined) {
-            for (const selfColliderComponent2D of selfColliderComponent2Ds) {
+        const selfColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(selfCollider.node);
+        if (selfColliderComponent2DSet !== undefined) {
+            for (const selfColliderComponent2D of selfColliderComponent2DSet) {
                 selfColliderComponent2D.onPreSolve?.(selfCollider, otherCollider, contact);
             }
         }
 
-        const otherColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(otherCollider.node);
-        if (otherColliderComponent2Ds !== undefined) {
-            for (const otherColliderComponent2D of otherColliderComponent2Ds) {
+        const otherColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(otherCollider.node);
+        if (otherColliderComponent2DSet !== undefined) {
+            for (const otherColliderComponent2D of otherColliderComponent2DSet) {
                 otherColliderComponent2D.onPreSolve?.(otherCollider, selfCollider, contact);
             }
         }
@@ -332,19 +320,77 @@ export class Component2D extends Component {
         otherCollider: Collider2D,
         contact: IPhysics2DContact | null
     ): void {
-        const selfColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(selfCollider.node);
-        if (selfColliderComponent2Ds !== undefined) {
-            for (const selfColliderComponent2D of selfColliderComponent2Ds) {
+        const selfColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(selfCollider.node);
+        if (selfColliderComponent2DSet !== undefined) {
+            for (const selfColliderComponent2D of selfColliderComponent2DSet) {
                 selfColliderComponent2D.onPostSolve?.(selfCollider, otherCollider, contact);
             }
         }
 
-        const otherColliderComponent2Ds = this._getCollisionEventNodeComponent2DsWeakMap(otherCollider.node);
-        if (otherColliderComponent2Ds !== undefined) {
-            for (const otherColliderComponent2D of otherColliderComponent2Ds) {
+        const otherColliderComponent2DSet = this._getCollisionEventNodeComponent2DSetWeakMap(otherCollider.node);
+        if (otherColliderComponent2DSet !== undefined) {
+            for (const otherColliderComponent2D of otherColliderComponent2DSet) {
                 otherColliderComponent2D.onPostSolve?.(otherCollider, selfCollider, contact);
             }
         }
+    }
+
+    /*----------------------------------- 缓存 -----------------------------------*/
+    private static _nodeToComponentNameToCacheComponentMapWeakMap = new WeakMap<Node, Map<string, Component>>();
+
+    private static _getCacheComponent<T extends Component>(
+        node: Node,
+        componentConstructor: ComponentConstructor<T>
+    ): T | null;
+    private static _getCacheComponent<T extends Component>(node: Node, componentName: string): T | null;
+    private static _getCacheComponent<T extends Component>(
+        node: Node,
+        componentConstructorOrComponentName: ComponentConstructor<T> | string
+    ): T | null {
+        const componentName =
+            typeof componentConstructorOrComponentName === "string"
+                ? componentConstructorOrComponentName
+                : js.getClassName(componentConstructorOrComponentName);
+
+        let componentNameToCacheComponentMap = this._nodeToComponentNameToCacheComponentMapWeakMap.get(node);
+        if (componentNameToCacheComponentMap === undefined) {
+            componentNameToCacheComponentMap = new Map<string, Component>();
+            this._nodeToComponentNameToCacheComponentMapWeakMap.set(node, componentNameToCacheComponentMap);
+        }
+
+        const cacheComponent = componentNameToCacheComponentMap.get(componentName);
+        if (cacheComponent !== undefined) {
+            return cacheComponent as T;
+        }
+
+        const component = node.getComponent(componentName);
+        if (component !== null) {
+            componentNameToCacheComponentMap.set(componentName, component);
+            return component as T;
+        }
+
+        return null;
+    }
+
+    private static _deleteCacheComponent(node: Node, componentName: string): void {
+        const componentNameToCacheComponentMap = this._nodeToComponentNameToCacheComponentMapWeakMap.get(node);
+        if (componentNameToCacheComponentMap === undefined) return;
+
+        componentNameToCacheComponentMap.delete(componentName);
+    }
+
+    /*----------------------------------- 方法 -----------------------------------*/
+
+    /**
+     * 批量设置对象属性
+     * @param props 属性键值对
+     */
+    private static _setObjectProps<T extends object>(object: T, props: Partial<T>): T {
+        for (const key in props) {
+            (object as any)[key] = props[key];
+        }
+
+        return object;
     }
 
     /*----------------------------------- 实例 -----------------------------------*/
@@ -363,20 +409,21 @@ export class Component2D extends Component {
     public _register(): void {
         Component2D._init();
 
+        this._tryGetUITransform();
+
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalKeyboard)) {
-            Component2D._addToGlobalKeyboardEventComponent2Ds(this);
+            Component2D._addToGlobalKeyboardEventComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalMouse)) {
-            Component2D._addToGlobalMouseComponent2Ds(this);
+            Component2D._addToGlobalMouseComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalTouch)) {
-            Component2D._addToGlobalTouchEventComponent2Ds(this);
+            Component2D._addToGlobalTouchEventComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Collision)) {
-            Component2D._addToCollisionEventNodeComponent2DsWeakMap(this);
+            Component2D._addToCollisionEventNodeComponent2DSetWeakMap(this);
         }
 
-        this._tryGetUITransform();
         this._registerEvents();
     }
 
@@ -385,16 +432,16 @@ export class Component2D extends Component {
      */
     public _unregister(): void {
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalKeyboard)) {
-            Component2D._removeFromGlobalKeyboardEventComponent2Ds(this);
+            Component2D._deleteFromGlobalKeyboardEventComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalMouse)) {
-            Component2D._removeFromGlobalMouseComponent2Ds(this);
+            Component2D._deleteFromGlobalMouseComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.GlobalTouch)) {
-            Component2D._removeFromGlobalTouchEventComponent2Ds(this);
+            Component2D._deleteFromGlobalTouchEventComponent2DSet(this);
         }
         if (getEventTypeEnabled(this, COMPONENT2D_EVENT_TYPE.Collision)) {
-            Component2D._removeFromCollisionEventNodeComponent2DsWeakMap(this);
+            Component2D._deleteFromCollisionEventNodeComponent2DSetWeakMap(this);
         }
 
         this._unregisterEvents();
@@ -462,19 +509,8 @@ export class Component2D extends Component {
             this._uiRenderer = null;
         }
 
-        const componentConstructorOrComponentNameToCacheComponentEntries = [
-            ...this._componentConstructorOrComponentNameToCacheComponentMap.entries(),
-        ];
-        for (const [
-            componentConstructorOrComponentName,
-            cacheComponent,
-        ] of componentConstructorOrComponentNameToCacheComponentEntries) {
-            if (cacheComponent === component) {
-                this._componentConstructorOrComponentNameToCacheComponentMap.delete(
-                    componentConstructorOrComponentName
-                );
-            }
-        }
+        const componentName = js.getClassName(component);
+        Component2D._deleteCacheComponent(this.node, componentName);
     }
 
     /*----------------------------------- 注销 -----------------------------------*/
@@ -519,49 +555,68 @@ export class Component2D extends Component {
     }
 
     /*----------------------------------- 方法 -----------------------------------*/
-    private _componentConstructorOrComponentNameToCacheComponentMap = new Map<
-        ComponentConstructor<Component> | string,
-        Component
-    >();
 
     /**
-     * 从缓存中获取组件
+     * 从缓存中获取指定节点组件
+     * @param node 节点
+     * @param componentConstructor 组件构造函数
+     */
+    public getTargetNodeCacheComponent<T extends Component>(
+        node: Node,
+        componentConstructor: ComponentConstructor<T>
+    ): T | null;
+    /**
+     * 通过组件名称从缓存中获取指定节点组件
+     * @param node 节点
+     * @param componentName 组件名称
+     */
+    public getTargetNodeCacheComponent<T extends Component>(node: Node, componentName: string): T | null;
+    public getTargetNodeCacheComponent<T extends Component>(
+        node: Node,
+        componentConstructorOrComponentName: ComponentConstructor<T> | string
+    ): T | null {
+        return Component2D._getCacheComponent(node, componentConstructorOrComponentName as ComponentConstructor<T>);
+    }
+
+    /**
+     * 从缓存中获取自身节点组件
      * @param componentConstructor 组件构造函数
      */
     public getCacheComponent<T extends Component>(componentConstructor: ComponentConstructor<T>): T | null;
     /**
-     * 通过组件名称从缓存中获取组件
+     * 通过组件名称从缓存中获取自身节点组件
      * @param componentName 组件名称
      */
     public getCacheComponent<T extends Component>(componentName: string): T | null;
     public getCacheComponent<T extends Component>(
         componentConstructorOrComponentName: ComponentConstructor<T> | string
     ): T | null {
-        const cacheComponent = this._componentConstructorOrComponentNameToCacheComponentMap.get(
-            componentConstructorOrComponentName
+        return this.getTargetNodeCacheComponent(
+            this.node,
+            componentConstructorOrComponentName as ComponentConstructor<T>
         );
-        if (cacheComponent !== undefined) return cacheComponent as T | null;
-
-        const component = this.getComponent<T>(componentConstructorOrComponentName as ComponentConstructor<T>);
-        if (component !== null) {
-            this._componentConstructorOrComponentNameToCacheComponentMap.set(
-                componentConstructorOrComponentName,
-                component
-            );
-        }
-        return component;
     }
 
     /**
-     * 批量设置属性
+     * 批量设置指定节点属性
+     * @param props 属性键值对
+     */
+    public setTargetNodeProps<T extends Node>(node: T, props: Partial<T>): T {
+        return Component2D._setObjectProps<T>(node, props);
+    }
+    /**
+     * 批量设置自身节点属性
+     * @param props 属性键值对
+     */
+    public setNodeProps<T extends Node>(props: Partial<T>): T {
+        return this.setTargetNodeProps(this.node as T, props);
+    }
+    /**
+     * 批量设置自身属性
      * @param props 属性键值对
      */
     public setProps<T extends object = this>(props: Partial<T>): this {
-        for (const key in props) {
-            (this as any)[key] = props[key];
-        }
-
-        return this;
+        return Component2D._setObjectProps<this>(this, props as Partial<this>);
     }
 
     /*----------------------------------- 属性 -----------------------------------*/
@@ -751,7 +806,7 @@ export class Component2D extends Component {
 
     private _applyColor() {
         if (this.uiRenderer) {
-            this.uiRenderer.color = this.color;
+            this.uiRenderer.color = this._color;
         }
     }
 

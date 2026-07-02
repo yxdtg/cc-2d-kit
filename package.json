@@ -1,7 +1,8 @@
 {
     "name": "cc-2d-kit",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "CocosCreator2D游戏开发工具包🚀",
+    "type": "module",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": [
@@ -32,6 +33,5 @@
         "kit"
     ],
     "author": "Yuxiang Liu",
-    "license": "MIT",
-    "type": "module"
+    "license": "MIT"
 }
