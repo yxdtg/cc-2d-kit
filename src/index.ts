@@ -1,1 +1,3 @@
-export * from "./core/Component2D";
+export * from "./utils";
+export * from "./core";
+export * from "./components";

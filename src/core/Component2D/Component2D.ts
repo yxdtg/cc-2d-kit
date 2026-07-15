@@ -381,18 +381,6 @@ export class Component2D extends Component {
 
     /*----------------------------------- 方法 -----------------------------------*/
 
-    /**
-     * 批量设置对象属性
-     * @param props 属性键值对
-     */
-    private static _setObjectProps<T extends object>(object: T, props: Partial<T>): T {
-        for (const key in props) {
-            (object as any)[key] = props[key];
-        }
-
-        return object;
-    }
-
     /*----------------------------------- 实例 -----------------------------------*/
 
     private _uiTransform: UITransform = null!;
@@ -595,28 +583,6 @@ export class Component2D extends Component {
             this.node,
             componentConstructorOrComponentName as ComponentConstructor<T>
         );
-    }
-
-    /**
-     * 批量设置指定节点属性
-     * @param props 属性键值对
-     */
-    public setTargetNodeProps<T extends Node>(node: T, props: Partial<T>): T {
-        return Component2D._setObjectProps<T>(node, props);
-    }
-    /**
-     * 批量设置自身节点属性
-     * @param props 属性键值对
-     */
-    public setNodeProps<T extends Node>(props: Partial<T>): T {
-        return this.setTargetNodeProps(this.node as T, props);
-    }
-    /**
-     * 批量设置自身属性
-     * @param props 属性键值对
-     */
-    public setProps<T extends object = this>(props: Partial<T>): this {
-        return Component2D._setObjectProps<this>(this, props as Partial<this>);
     }
 
     /*----------------------------------- 属性 -----------------------------------*/

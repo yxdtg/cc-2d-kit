@@ -3,7 +3,7 @@
     "compilerOptions": {
         "target": "esnext",
         "lib": ["ESNext", "DOM", "DOM.Iterable"],
-        "types": ["./types/cc.d.ts"],
+        "types": ["./types/cc.d.ts", "./types/cc.editor.d.ts"],
 
         "moduleResolution": "bundler",
 
@@ -11,6 +11,9 @@
         "stripInternal": true,
         "noImplicitReturns": true,
         "noEmit": true,
+
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
 
         "rootDir": "./src",
         "paths": {

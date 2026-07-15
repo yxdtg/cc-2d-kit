@@ -2,7 +2,17 @@
 
 ## CocosCreator2D游戏开发工具包🚀
 
-- Component2D: 继承Component, 用于提升2D游戏开发体验
+- core
+    - Component2D: 用于提升2D游戏开发体验
+
+- components
+    - Joystick: 多点触控高性能摇杆组件
+
+- utils
+    - object-props 批量处理对象属性
+        - getObjectProps 批量获取对象属性
+        - setObjectProps 批量设置对象属性
+
 - ...
 
 ## 安装
@@ -50,7 +60,7 @@ export class Player extends Component2D {
 }
 ```
 
-## 详细使用
+## Component2D详细使用
 
 ```typescript
 import { _decorator, Collider2D, EventKeyboard, EventMouse, EventTouch, IPhysics2DContact, KeyCode, Sprite } from "cc";
@@ -92,13 +102,6 @@ export class NewComponent2D extends Component2D {
         this.colorA = 255;
         this.colorHex = "#ffffffff";
         this.setColor(255, 255, 255, 255);
-
-        // 批量设置指定节点属性(可链式调用)
-        this.setTargetNodeProps(this.node, { x: 100, y: 100 });
-        // 批量设置自身节点属性(可链式调用)
-        this.setNodeProps({ x: 100, y: 100 });
-        // 批量设置自身属性(可链式调用)
-        this.setProps({ x: 100, y: 100 });
 
         // 从缓存中获取指定节点组件(高性能)
         console.log(this.getTargetNodeCacheComponent(Sprite));
@@ -245,6 +248,40 @@ export class NewComponent2D extends Component2D {
     protected onGlobalTouchEnd(event: EventTouch): void {}
     protected onGlobalTouchCancel(event: EventTouch): void {}
 }
+```
+
+## Joystick详细使用
+
+### 新建一个Joystick组件，继承\_Joystick
+
+```typescript
+import { _decorator } from "cc";
+import { _Joystick } from "cc-2d-kit";
+
+const { ccclass, property } = _decorator;
+
+@ccclass("Joystick")
+export class Joystick extends _Joystick {}
+
+// rocker: Node 摇杆节点
+// halfWidthAsMaxRadius: boolean 使用半宽作为最大半径
+// maxRadius: number 最大半径(不使用半宽作为最大半径才会生效)
+
+// isDragging: boolean 摇杆是否处于拖拽状态
+// vector: Vec2 摇杆拖拽方向向量
+// vectorRotation: number 摇杆拖拽方向弧度
+// vectorAngle: number 摇杆拖拽方向角度
+```
+
+## object-props详细使用
+
+```typescript
+import { getObjectProps, setObjectProps } from "cc-2d-kit";
+
+const player = { x: 0, y: 0, width: 64, height: 64 };
+
+getObjectProps(player, ["x", "y"]); // { x: number, y: number }
+setObjectProps(player, { x: 100, y: 100 });
 ```
 
 ## NewComponent2D脚本模版
